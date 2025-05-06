@@ -1,10 +1,9 @@
 using BlockArrays: Block, blocksize
-using BlockSparseArrays: BlockSparseArray, BlockSparseMatrix
-using GradedArrays: GradedOneTo, blocklabels, dual, flip, gradedrange, space_isequal
-using GradedArrays.SymmetrySectors: U1
+using BlockSparseArrays: BlockSparseArray
+using GradedArrays: GradedArray, GradedMatrix, U1, dual, flip, gradedrange, space_isequal
 using Random: randn!
 using TensorAlgebra: contract, matricize, unmatricize
-using Test: @test, @test_broken, @testset
+using Test: @test, @testset
 
 function randn_blockdiagonal(elt::Type, axes::Tuple)
   a = BlockSparseArray{elt}(undef, axes)
@@ -23,7 +22,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     d2 = gradedrange([U1(0) => 1, U1(1) => 1])
     a = randn_blockdiagonal(elt, (d1, d2, dual(d1), dual(d2)))
     m = matricize(a, (1, 2), (3, 4))
-    @test m isa BlockSparseMatrix
+    @test m isa GradedMatrix
     @test space_isequal(axes(m, 1), gradedrange([U1(0) => 1, U1(1) => 2, U1(2) => 1]))
     @test space_isequal(
       axes(m, 2), flip(gradedrange([U1(0) => 1, U1(-1) => 2, U1(-2) => 1]))
@@ -50,13 +49,13 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
 
     d1234 = gradedrange([U1(-2) => 1, U1(-1) => 4, U1(0) => 6, U1(1) => 4, U1(2) => 1])
     m = matricize(a, (1, 2, 3, 4), ())
-    @test m isa BlockSparseMatrix
+    @test m isa GradedMatrix
     @test space_isequal(axes(m, 1), d1234)
     @test space_isequal(axes(m, 2), flip(gradedrange([U1(0) => 1])))
     @test a == unmatricize(m, (d1, d2, dual(d1), dual(d2)), ())
 
     m = matricize(a, (), (1, 2, 3, 4))
-    @test m isa BlockSparseMatrix
+    @test m isa GradedMatrix
     @test space_isequal(axes(m, 1), gradedrange([U1(0) => 1]))
     @test space_isequal(axes(m, 2), dual(d1234))
     @test a == unmatricize(m, (), (d1, d2, dual(d1), dual(d2)))
@@ -78,7 +77,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     )
     @test dimnames_dest == dimnames_dest_dense
     @test size(a_dest) == size(a_dest_dense)
-    @test a_dest isa BlockSparseArray
+    @test a_dest isa GradedArray
     @test a_dest ≈ a_dest_dense
 
     # matrix vector
@@ -86,15 +85,15 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     a_dest_dense, dimnames_dest_dense = contract(a1_dense, (2, -1, -2, 1), a3_dense, (1, 2))
     @test dimnames_dest == dimnames_dest_dense
     @test size(a_dest) == size(a_dest_dense)
-    @test a_dest isa BlockSparseArray
+    @test a_dest isa GradedArray
     @test a_dest ≈ a_dest_dense
 
-    #  vector matrix
+    # vector matrix
     a_dest, dimnames_dest = contract(a3, (1, 2), a1, (2, -1, -2, 1))
     a_dest_dense, dimnames_dest_dense = contract(a3_dense, (1, 2), a1_dense, (2, -1, -2, 1))
     @test dimnames_dest == dimnames_dest_dense
     @test size(a_dest) == size(a_dest_dense)
-    @test a_dest isa BlockSparseArray
+    @test a_dest isa GradedArray
     @test a_dest ≈ a_dest_dense
 
     # vector vector
@@ -110,7 +109,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     a_dest_dense, dimnames_dest_dense = contract(a3_dense, (1, 2), a3_dense, (3, 4))
     @test dimnames_dest == dimnames_dest_dense
     @test size(a_dest) == size(a_dest_dense)
-    @test a_dest isa BlockSparseArray
+    @test a_dest isa GradedArray
     @test a_dest ≈ a_dest_dense
   end
 end

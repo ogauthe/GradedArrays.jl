@@ -1,19 +1,21 @@
 using BlockArrays:
-  AbstractBlockArray, Block, BlockedOneTo, blockedrange, blocklengths, blocksize
+  Block, BlockedOneTo, BlockedUnitRange, blockedrange, blocklengths, blocksize
 using BlockSparseArrays:
   BlockSparseArray, BlockSparseMatrix, BlockSparseVector, blockstoredlength
-using GradedArrays: GradedArray, GradedMatrix, GradedVector
-using GradedArrays.GradedUnitRanges:
-  GradedUnitRanges,
+using GradedArrays:
+  GradedArray,
+  GradedMatrix,
+  GradedVector,
   GradedOneTo,
   GradedUnitRange,
-  GradedUnitRangeDual,
+  U1,
   dag,
   dual,
   gradedrange,
-  isdual
-using GradedArrays.LabelledNumbers: label
-using GradedArrays.SymmetrySectors: U1
+  isdual,
+  sectorrange,
+  space_isequal,
+  ungrade
 using SparseArraysBase: storedlength
 using LinearAlgebra: adjoint
 using Random: randn!
@@ -33,8 +35,6 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
 @testset "GradedArray (eltype=$elt)" for elt in elts
   @testset "definitions" begin
     r = gradedrange([U1(0) => 2, U1(1) => 2])
-    a = BlockSparseArray{elt}(undef)
-    @test !(a isa GradedArray)  # no type piracy
     v = BlockSparseArray{elt}(undef, r)
     @test v isa GradedArray
     @test v isa GradedVector
@@ -43,17 +43,40 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     @test m isa GradedMatrix
     a = BlockSparseArray{elt}(undef, r, r, r)
     @test a isa GradedArray
+
+    a0 = BlockSparseArray{elt}(undef)
+    @test !(a0 isa GradedArray)  # no type piracy
+
+    b0 = blockedrange([2, 2])
+    v = BlockSparseArray{elt}(undef, b0)
+    @test !(v isa GradedArray)
+    @test !(v isa GradedVector)
+    m = BlockSparseArray{elt}(undef, b0, r)
+    @test !(m isa GradedArray)
+    @test !(m isa GradedMatrix)
+    m = BlockSparseArray{elt}(undef, r, b0)
+    @test !(m isa GradedArray)
+    @test !(m isa GradedMatrix)
+    a = BlockSparseArray{elt}(undef, b0, r, r)
+    @test !(a isa GradedArray)
+    a = BlockSparseArray{elt}(undef, r, b0, r)
+    @test !(a isa GradedArray)
   end
+
   @testset "map" begin
     d1 = gradedrange([U1(0) => 2, U1(1) => 2])
     d2 = gradedrange([U1(0) => 2, U1(1) => 2])
     a = randn_blockdiagonal(elt, (d1, d2, d1, d2))
+    @test a isa GradedArray{elt,4}
     @test axes(a, 1) isa GradedOneTo
     @test axes(view(a, 1:4, 1:4, 1:4, 1:4), 1) isa GradedOneTo
 
-    d1 = gradedrange([U1(0) => 2, U1(1) => 2])
-    d2 = gradedrange([U1(0) => 2, U1(1) => 2])
-    a = randn_blockdiagonal(elt, (d1, d2, d1, d2))
+    a0 = ungrade(a)
+    @test !(a0 isa GradedArray)
+    @test a0 isa BlockSparseArray{elt,4}
+    @test axes(a0) isa NTuple{4,BlockedOneTo{Int}}
+    @test a0 == a
+
     for b in (a + a, 2 * a)
       @test size(b) == (4, 4, 4, 4)
       @test blocksize(b) == (2, 2, 2, 2)
@@ -63,8 +86,8 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       for i in 1:ndims(a)
         @test axes(b, i) isa GradedOneTo
       end
-      @test label(axes(b, 1)[Block(1)]) == U1(0)
-      @test label(axes(b, 1)[Block(2)]) == U1(1)
+      @test space_isequal(axes(b, 1)[Block(1)], sectorrange(U1(0), 1:2))
+      @test space_isequal(axes(b, 1)[Block(2)], sectorrange(U1(1), 3:4))
       @test Array(b) isa Array{elt}
       @test Array(b) == b
       @test 2 * Array(a) == b
@@ -110,7 +133,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       @test storedlength(b) == 256
       @test blockstoredlength(b) == 16
       for i in 1:ndims(a)
-        @test axes(b, i) isa BlockedOneTo{Int}
+        @test axes(b, i) isa BlockedUnitRange{Int}
       end
       @test Array(a) isa Array{elt}
       @test Array(a) == a
@@ -128,8 +151,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     for i in 1:ndims(a)
       @test axes(b, i) isa GradedOneTo
     end
-    @test label(axes(b, 1)[Block(1)]) == U1(0)
-    @test label(axes(b, 1)[Block(2)]) == U1(1)
+    @test space_isequal(axes(b, 1), gradedrange([U1(0) => 1, U1(1) => 1]))
     @test Array(a) isa Array{elt}
     @test Array(a) == a
   end
@@ -193,8 +215,9 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       end
 
       I = [Block(1)[1:1]]
-      @test a[I, :] isa AbstractBlockArray
-      @test a[:, I] isa AbstractBlockArray
+      @test a[I, :] isa GradedMatrix
+      @test a[:, I] isa GradedMatrix
+      @test a[I, I] isa GradedMatrix
       @test size(a[I, I]) == (1, 1)
       @test !isdual(axes(a[I, I], 1))
     end
@@ -214,11 +237,11 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       end
 
       I = [Block(1)[1:1]]
-      @test a[I, :] isa AbstractBlockArray
+      @test a[I, :] isa GradedMatrix
       @test axes(a[I, :], 1) isa GradedOneTo
       @test axes(a[I, :], 2) isa GradedUnitRange
 
-      @test a[:, I] isa AbstractBlockArray
+      @test a[:, I] isa GradedMatrix
       @test axes(a[:, I], 2) isa GradedOneTo
       @test axes(a[:, I], 1) isa GradedUnitRange
       @test size(a[I, I]) == (1, 1)
@@ -236,12 +259,12 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       @test blockstoredlength(b) == 2
       @test Array(b) == 2 * Array(a)
       for i in 1:2
-        @test axes(b, i) isa GradedUnitRangeDual
-        @test axes(a[:, :], i) isa GradedUnitRangeDual
+        @test axes(b, i) isa GradedUnitRange
+        @test axes(a[:, :], i) isa GradedUnitRange
       end
       I = [Block(1)[1:1]]
-      @test a[I, :] isa AbstractBlockArray
-      @test a[:, I] isa AbstractBlockArray
+      @test a[I, :] isa GradedMatrix
+      @test a[:, I] isa GradedMatrix
       @test size(a[I, I]) == (1, 1)
       @test isdual(axes(a[I, :], 2))
       @test isdual(axes(a[:, I], 1))
@@ -261,13 +284,13 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       @test blockstoredlength(b) == 2
       @test Array(b) == 2 * Array(a)
       for i in 1:2
-        @test axes(b, i) isa GradedUnitRangeDual
-        @test axes(a[:, :], i) isa GradedUnitRangeDual
+        @test axes(b, i) isa GradedUnitRange
+        @test axes(a[:, :], i) isa GradedUnitRange
       end
 
       I = [Block(1)[1:1]]
-      @test a[I, :] isa AbstractBlockArray
-      @test a[:, I] isa AbstractBlockArray
+      @test a[I, :] isa GradedMatrix
+      @test a[:, I] isa GradedMatrix
       @test size(a[I, I]) == (1, 1)
       @test isdual(axes(a[I, :], 2))
       @test isdual(axes(a[:, I], 1))
@@ -275,28 +298,6 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
       @test isdual(axes(a[:, I], 2))
       @test isdual(axes(a[I, I], 1))
       @test isdual(axes(a[I, I], 2))
-    end
-
-    @testset "dual BlockedUnitRange" begin    # self dual
-      r = blockedrange([2, 2])
-      a = BlockSparseArray{elt}(undef, dual(r), dual(r))
-      @views for i in [Block(1, 1), Block(2, 2)]
-        a[i] = randn(elt, size(a[i]))
-      end
-      b = 2 * a
-      @test blockstoredlength(b) == 2
-      @test Array(b) == 2 * Array(a)
-      @test a[:, :] isa BlockSparseArray
-      for i in 1:2
-        @test axes(b, i) isa BlockedOneTo
-        @test axes(a[:, :], i) isa BlockedOneTo
-      end
-
-      I = [Block(1)[1:1]]
-      @test a[I, :] isa BlockSparseArray
-      @test a[:, I] isa BlockSparseArray
-      @test size(a[I, I]) == (1, 1)
-      @test !isdual(axes(a[I, I], 1))
     end
 
     # Test case when all axes are dual from taking the adjoint.
@@ -360,7 +361,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     @test iszero(b[Block(2, 1)])
     @test iszero(b[Block(1, 2)])
     @test b[Block(2, 2)] == a2
-    @test all(GradedUnitRanges.space_isequal.(axes(b), (r, dual(r))))
+    @test all(space_isequal.(axes(b), (r, dual(r))))
 
     # Regression test for Vector, which caused
     # an ambiguity error with Base.
@@ -374,7 +375,7 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     @test blockstoredlength(b) == 1
     @test b[Block(1)] == a1
     @test iszero(b[Block(2)])
-    @test all(GradedUnitRanges.space_isequal.(axes(b), (r,)))
+    @test all(space_isequal.(axes(b), (r,)))
 
     # Regression test for BitArray
     r = gradedrange([U1(0) => 2, U1(1) => 3])
@@ -389,8 +390,21 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
     @test iszero(b[Block(2, 1)])
     @test iszero(b[Block(1, 2)])
     @test b[Block(2, 2)] == a2
-    @test all(GradedUnitRanges.space_isequal.(axes(b), (r, dual(r))))
+    @test all(space_isequal.(axes(b), (r, dual(r))))
   end
+end
+
+@testset "misc indexing" begin
+  g = gradedrange([U1(0) => 2, U1(1) => 3])
+  v = zeros(g)
+  v2 = v[g]
+  @test space_isequal(only(axes(v2)), g)
+  @test v2 == v
+  gd = dual(g)
+  v = zeros(gd)
+  v2 = v[gd]
+  @test space_isequal(only(axes(v2)), gd)
+  @test v2 == v
 end
 
 @testset "dag" begin
@@ -403,4 +417,6 @@ end
   ad = dag(a)
   @test Array(ad) == conj(Array(a))
   @test isdual.(axes(ad)) == (true, false)
+  @test space_isequal(axes(ad, 1), dual(axes(a, 1)))
+  @test space_isequal(axes(ad, 2), dual(axes(a, 2)))
 end

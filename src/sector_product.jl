@@ -1,10 +1,6 @@
 # This files defines a structure for Cartesian product of 2 or more fusion sectors
 # e.g. U(1)×U(1), U(1)×SU2(2)×SU(3)
 
-using BlockArrays: blocklengths
-using ..LabelledNumbers: LabelledInteger, label, labelled, unlabel
-using ..GradedUnitRanges: GradedUnitRanges, dual, map_blocklabels
-
 # =====================================  Definition  =======================================
 struct SectorProduct{Sectors} <: AbstractSector
   arguments::Sectors
@@ -15,7 +11,7 @@ SectorProduct(c::SectorProduct) = _SectorProduct(arguments(c))
 
 arguments(s::SectorProduct) = s.arguments
 
-GradedUnitRanges.to_sector(nt::NamedTuple) = SectorProduct(nt)
+to_sector(nt::NamedTuple) = SectorProduct(nt)
 
 # =================================  Sectors interface  ====================================
 function SymmetryStyle(T::Type{<:SectorProduct})
@@ -27,7 +23,7 @@ function quantum_dimension(::NotAbelianStyle, s::SectorProduct)
 end
 
 # use map instead of broadcast to support both Tuple and NamedTuple
-GradedUnitRanges.dual(s::SectorProduct) = SectorProduct(map(dual, arguments(s)))
+dual(s::SectorProduct) = SectorProduct(map(dual, arguments(s)))
 
 function trivial(type::Type{<:SectorProduct})
   return SectorProduct(arguments_trivial(arguments_type(type)))
@@ -102,18 +98,20 @@ end
 ×(c1::NamedTuple, c2::AbstractSector) = ×(SectorProduct(c1), SectorProduct(c2))
 ×(c1::AbstractSector, c2::NamedTuple) = ×(SectorProduct(c1), SectorProduct(c2))
 
-function ×(l1::LabelledInteger, l2::LabelledInteger)
-  c3 = label(l1) × label(l2)
-  m3 = unlabel(l1) * unlabel(l2)
-  return labelled(m3, c3)
+function ×(sr1::SectorOneTo, sr2::SectorOneTo)
+  isdual(sr1) == isdual(sr2) || throw(ArgumentError("SectorProduct duality must match"))
+  return sectorrange(
+    sector(sr1) × sector(sr2),
+    sector_multiplicity(sr1) * sector_multiplicity(sr2),
+    isdual(sr1),
+  )
 end
 
-function ×(g1::AbstractUnitRange, g2::AbstractUnitRange)
+function ×(g1::GradedOneTo, g2::GradedOneTo)
   v = map(
-    ((l1, l2),) -> l1 × l2,
-    Iterators.flatten((Iterators.product(blocklengths(g1), blocklengths(g2)),),),
+    splat(×), Iterators.flatten((Iterators.product(eachblockaxis(g1), eachblockaxis(g2)),),)
   )
-  return gradedrange(v)
+  return mortar_axis(v)
 end
 
 # ====================================  Fusion rules  ======================================
@@ -124,10 +122,6 @@ end
 function fusion_rule(style::SymmetryStyle, c1::AbstractSector, c2::SectorProduct)
   return fusion_rule(style, SectorProduct(c1), c2)
 end
-# Fix ambiguity error.
-function fusion_rule(style::SymmetryStyle, c1::SectorProduct, c2::SectorProduct)
-  return throw(ArgumentError("SectorProduct fusion not defined for symmetry style $style."))
-end
 
 # generic case: fusion returns a GradedUnitRanges, even for fusion with Empty
 function fusion_rule(::NotAbelianStyle, s1::SectorProduct, s2::SectorProduct)
@@ -136,7 +130,7 @@ end
 
 # Abelian case: fusion returns SectorProduct
 function fusion_rule(::AbelianStyle, s1::SectorProduct, s2::SectorProduct)
-  return label(only(fusion_rule(NotAbelianStyle(), s1, s2)))
+  return only(sectors((fusion_rule(NotAbelianStyle(), s1, s2))))
 end
 
 # lift ambiguities for TrivialSector
@@ -236,5 +230,5 @@ arguments_diff(nt1::NamedTuple, nt2::NamedTuple) = symdiff_keys(nt1, nt2)
 
 function shared_arguments_fusion_rule(shared1::NT, shared2::NT) where {NT<:NamedTuple}
   tuple_fused = shared_arguments_fusion_rule(values(shared1), values(shared2))
-  return map_blocklabels(SectorProduct ∘ NT ∘ arguments ∘ SectorProduct, tuple_fused)
+  return map_sectors(SectorProduct ∘ NT ∘ arguments ∘ SectorProduct, tuple_fused)
 end

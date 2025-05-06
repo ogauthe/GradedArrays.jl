@@ -4,18 +4,19 @@ using BlockSparseArrays:
   AbstractBlockSparseMatrix,
   AnyAbstractBlockSparseArray,
   BlockSparseArray,
-  BlockSparseMatrix,
-  BlockSparseVector,
-  blocktype
-using ..GradedUnitRanges: AbstractGradedUnitRange, dual
+  blocktype,
+  sparsemortar
 using LinearAlgebra: Adjoint
 using TypeParameterAccessors: similartype, unwrap_array_type
 
 const GradedArray{T,M,A,Blocks,Axes} = BlockSparseArray{
   T,M,A,Blocks,Axes
 } where {Axes<:Tuple{AbstractGradedUnitRange,Vararg{AbstractGradedUnitRange}}}
-const GradedMatrix{T,A,Blocks,Axes} = GradedArray{T,2,A,Blocks,Axes}
-const GradedVector{T,A,Blocks,Axes} = GradedArray{T,1,A,Blocks,Axes}
+const GradedMatrix{T,A,Blocks,Axes} = GradedArray{
+  T,2,A,Blocks,Axes
+} where {Axes<:Tuple{AbstractGradedUnitRange,AbstractGradedUnitRange}}
+const GradedVector{T,A,Blocks,Axes} =
+  GradedArray{T,1,A,Blocks,Axes} where {Axes<:Tuple{AbstractGradedUnitRange}}
 
 # TODO: Handle this through some kind of trait dispatch, maybe
 # a `SymmetryStyle`-like trait to check if the block sparse
@@ -66,31 +67,12 @@ function Base.similar(
   return similar_blocksparse(a, elt, axes)
 end
 
-# Fix ambiguity error with `BlockArrays.jl`.
-function Base.similar(
-  a::StridedArray,
-  elt::Type,
-  axes::Tuple{
-    AbstractGradedUnitRange,AbstractGradedUnitRange,Vararg{AbstractGradedUnitRange}
-  },
-)
-  return similar_blocksparse(a, elt, axes)
-end
-
 # Fix ambiguity error with `BlockSparseArrays.jl`.
+# TBD DerivableInterfaces?
 function Base.similar(
   a::AnyAbstractBlockSparseArray,
   elt::Type,
   axes::Tuple{AbstractGradedUnitRange,Vararg{AbstractGradedUnitRange}},
-)
-  return similar_blocksparse(a, elt, axes)
-end
-function Base.similar(
-  a::AnyAbstractBlockSparseArray,
-  elt::Type,
-  axes::Tuple{
-    AbstractGradedUnitRange,AbstractGradedUnitRange,Vararg{AbstractGradedUnitRange}
-  },
 )
   return similar_blocksparse(a, elt, axes)
 end
@@ -135,3 +117,5 @@ function Base.getindex(
 )
   return getindex_blocksparse(a, I1, I2)
 end
+
+ungrade(a::GradedArray) = sparsemortar(blocks(a), ungrade.(axes(a)))
