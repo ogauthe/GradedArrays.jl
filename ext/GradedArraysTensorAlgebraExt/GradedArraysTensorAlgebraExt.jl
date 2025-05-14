@@ -5,8 +5,13 @@ using BlockSparseArrays: BlockSparseArray, blockreshape
 using GradedArrays:
   AbstractGradedUnitRange,
   GradedArray,
+  KroneckerArray,
+  KroneckerMatrix,
+  array,
   flip,
+  identity_dimension,
   invblockperm,
+  kroneckerarray,
   sectormergesortperm,
   sectorsortperm,
   trivial,
@@ -73,4 +78,16 @@ function sectormergesort(a::AbstractArray)
   I = sectormergesortperm.(axes(a))
   return a[I...]
 end
+
+# TensorAlgebra
+function TensorAlgebra.matricize(ka::KroneckerArray, biperm::AbstractBlockPermutation{2})
+  return kroneckerarray(identity_dimension(ka), matricize(array(ka), biperm))
+end
+
+function TensorAlgebra.unmatricize!(
+  ka::KroneckerArray, km::KroneckerMatrix, biperm::AbstractBlockPermutation{2}
+)
+  return kroneckerarray(identity_dimension(ka), unmatricize!(array(ka), array(km), biperm))
+end
+
 end

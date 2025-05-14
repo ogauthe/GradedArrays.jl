@@ -21,6 +21,9 @@ include("sector_product.jl")
 include("fusion.jl")
 include("gradedarray.jl")
 
+include("kroneckerrange.jl")
+include("kroneckerarray.jl")
+
 export SU2,
   U1,
   Z,
