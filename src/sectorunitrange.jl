@@ -1,7 +1,7 @@
 # This files defines SectorUnitRange, a unit range associated with a sector and an arrow
 
 using GradedArrays.KroneckerProducts:
-  KroneckerProducts, CartesianProductUnitRange, cartesianproduct
+  KroneckerProducts, CartesianProductUnitRange, cartesianproduct, cartesianproductunitrange
 
 # =====================================  Definition  =======================================
 
@@ -22,7 +22,7 @@ const SectorOneTo{T,Sector,Range} = CartesianProductUnitRange{
 
 # sectorrange(SU2(1), 2:5)
 function sectorrange(s, r::AbstractUnitRange, b::Bool=false)
-  return CartesianProductUnitRange(cartesianproduct(to_sector(s), r), r, b)
+  return cartesianproductunitrange(cartesianproduct(to_sector(s), r), r, b)
 end
 
 # sectorrange(SU2(1), 1)

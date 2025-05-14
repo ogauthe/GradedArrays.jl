@@ -1,3 +1,5 @@
+using GradedArrays: arguments
+
 # ====================================  Definitions  =======================================
 
 struct KroneckerMatrix{A<:AbstractMatrix,B<:AbstractMatrix,T} <: AbstractMatrix{T}
@@ -22,14 +24,26 @@ GradedArrays.arguments(km::KroneckerMatrix) = (km.a, km.b)
 
 # ==================================  Base interface  ======================================
 
+# TBD isdual?
 function Base.axes(km::KroneckerMatrix)
   return (
-    CartesianProductUnitRange{1:size(km, 1),CartesianProduct(first.(axes.(arguments(km))))},
-    CartesianProductUnitRange{1:size(km, 2),CartesianProduct(last.(axes.(arguments(km))))},
+    cartesianproductunitrange(
+      cartesianproduct(first.(axes.(arguments(km)))...), 1:size(km, 1), false
+    ),
+    cartesianproductunitrange(
+      cartesianproduct(last.(axes.(arguments(km)))...), 1:size(km, 2), false
+    ),
   )
 end
 
 function Base.show(io::IO, km::KroneckerMatrix)
+  println(io, typeof(km))
+  println(io, first(arguments(km)))
+  return println(io, last(arguments(km)))
+end
+
+# show(io::IO, ::MIME"text/plain", a::AbstractArray) does not default on show(io, A)
+function Base.show(io::IO, ::MIME"text/plain", km::KroneckerMatrix)
   println(io, typeof(km))
   println(io, first(arguments(km)))
   return println(io, last(arguments(km)))
@@ -40,4 +54,12 @@ function Base.size(km::KroneckerMatrix)
   return (prod(first.(sizes)), prod(last.(sizes)))
 end
 
-#Base.getindex(km::KroneckeMatrix) = isabelian(km) ? getindex(::AbelianStyle) : error()
+for f in [:+, :-, :*]
+  @eval function Base.$f(km1::KroneckerMatrix, km2::KroneckerMatrix)
+    return kroneckermatrix($f.(arguments.((km1, km2))...)...)
+  end
+end
+
+for f in [:-, :adjoint, :copy, :transpose]
+  @eval Base.$f(km::KroneckerMatrix) = kroneckermatrix($f.(arguments(km))...)
+end
