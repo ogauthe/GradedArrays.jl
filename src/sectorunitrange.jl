@@ -7,23 +7,15 @@
 # when sliced directly, the label is dropped
 # when sliced between multiplicities with sr[(:,1:1)], it returns another SectorUnitRange
 # TBD impose some compatibility constraints between range and quantum_dimension?
-struct SectorUnitRange{T,Sector,Range<:AbstractUnitRange{T}} <: AbstractUnitRange{T}
-  sector::Sector
-  full_range::Range
-  isdual::Bool
 
-  function SectorUnitRange(s, r, b)
-    return new{eltype(r),typeof(s),typeof(r)}(s, r, b)
-  end
-end
-
+const SectorUnitRange{T} = CartesianProductUnitRange{<:AbstractSector}
 const SectorOneTo{T,Sector,Range} = SectorUnitRange{T,Sector,Base.OneTo{T}}
 
 # ====================================  Constructors  ======================================
 
 # sectorrange(SU2(1), 2:5)
 function sectorrange(s, r::AbstractUnitRange, b::Bool=false)
-  return SectorUnitRange(to_sector(s), r, b)
+  return CartesianProductUnitRange(to_sector(s), r, b)
 end
 
 # sectorrange(SU2(1), 1)

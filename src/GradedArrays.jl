@@ -3,6 +3,8 @@ module GradedArrays
 include("gradedunitrange_interface.jl")
 include("symmetry_style.jl")
 
+include("KroneckerProducts/KroneckerProducts.jl")
+
 include("sectorunitrange.jl")
 include("gradedunitrange.jl")
 
@@ -20,9 +22,6 @@ include("sector_product.jl")
 
 include("fusion.jl")
 include("gradedarray.jl")
-
-include("kroneckerrange.jl")
-include("kroneckerarray.jl")
 
 export SU2,
   U1,

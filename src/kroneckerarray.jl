@@ -12,8 +12,8 @@ struct KroneckerArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
   end
 end
 
-const KroneckerVector{T,A} = KroneckerArray{T,1,A}
-const KroneckerMatrix{T,A} = KroneckerArray{T,2,A}
+#const KroneckerVector{T,A} = KroneckerArray{T,1,A}
+#const KroneckerMatrix{T,A} = KroneckerArray{T,2,A}
 
 # accessors
 array(ka::KroneckerArray) = ka.array
