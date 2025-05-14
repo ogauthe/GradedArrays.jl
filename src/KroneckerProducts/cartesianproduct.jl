@@ -1,4 +1,5 @@
 using BlockArrays: Block
+using GradedArrays: GradedArrays
 
 # ====================================  Definitions  =======================================
 struct CartesianProduct{A,B}
@@ -10,7 +11,7 @@ end
 
 # =====================================  Accessors  ========================================
 
-arguments(cp::CartesianProduct) = (cp.a, cp.b)
+GradedArrays.arguments(cp::CartesianProduct) = (cp.a, cp.b)
 
 # ====================================  Constructors  ======================================
 

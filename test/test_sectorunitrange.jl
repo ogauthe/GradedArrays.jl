@@ -16,6 +16,7 @@ using TestExtras: @constinferred
 using GradedArrays:
   U1,
   SU,
+  SectorOneTo,
   SectorUnitRange,
   dual,
   flip,
@@ -33,6 +34,7 @@ using GradedArrays:
 @testset "SectorUnitRange" begin
   sr = sectorrange(SU((1, 0)), 2)
   @test sr isa SectorUnitRange
+  @test sr isa SectorOneTo
 
   # accessors
   @test sector(sr) == SU((1, 0))

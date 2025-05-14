@@ -1,6 +1,7 @@
 # This files defines SectorUnitRange, a unit range associated with a sector and an arrow
 
-using GradedArrays.KroneckerProducts: CartesianProductUnitRange
+using GradedArrays.KroneckerProducts:
+  KroneckerProducts, CartesianProductUnitRange, cartesianproduct
 
 # =====================================  Definition  =======================================
 
@@ -12,16 +13,16 @@ using GradedArrays.KroneckerProducts: CartesianProductUnitRange
 
 const SectorUnitRange{T,Sector,Range} = CartesianProductUnitRange{
   T,Sector,MultRange,Range
-} where {Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
+} where {T,Sector<:AbstractSector,MultRange<:AbstractUnitRange{T},Range}
 const SectorOneTo{T,Sector,Range} = CartesianProductUnitRange{
   T,Sector,MultRange,Base.OneTo{T}
-} where {Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
+} where {T,Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
 
 # ====================================  Constructors  ======================================
 
 # sectorrange(SU2(1), 2:5)
 function sectorrange(s, r::AbstractUnitRange, b::Bool=false)
-  return CartesianProductUnitRange(to_sector(s), r, b)
+  return CartesianProductUnitRange(cartesianproduct(to_sector(s), r), r, b)
 end
 
 # sectorrange(SU2(1), 1)
@@ -36,9 +37,8 @@ end
 
 # =====================================  Accessors  ========================================
 
-sector(sr::SectorUnitRange) = sr.sector
-ungrade(sr::SectorUnitRange) = sr.full_range
-isdual(sr::SectorUnitRange) = sr.isdual
+sector(sr::SectorUnitRange) = first(KroneckerProducts.arguments(cartesianproduct(sr)))
+ungrade(sr::SectorUnitRange) = last(KroneckerProducts.arguments(cartesianproduct(sr)))
 
 # ==================================  Base interface  ======================================
 

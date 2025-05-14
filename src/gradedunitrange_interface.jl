@@ -39,6 +39,8 @@ Return an array without attached sectors. Avoid copying data when possible.
 """
 ungrade(a::AbstractArray) = a
 
+function arguments end
+
 map_sectors(::Any, a::AbstractUnitRange) = a
 
 to_sector(x) = x

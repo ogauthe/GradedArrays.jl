@@ -18,7 +18,7 @@ kroneckermatrix(a, b) = KroneckerMatrix(a, b)
 
 # =====================================  Accessors  ========================================
 
-arguments(km::KroneckerMatrix) = (km.a, km.b)
+GradedArrays.arguments(km::KroneckerMatrix) = (km.a, km.b)
 
 # ==================================  Base interface  ======================================
 
