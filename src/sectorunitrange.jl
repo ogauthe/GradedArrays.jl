@@ -1,5 +1,7 @@
 # This files defines SectorUnitRange, a unit range associated with a sector and an arrow
 
+using GradedArrays.KroneckerProducts: CartesianProductUnitRange
+
 # =====================================  Definition  =======================================
 
 # This implementation contains the "full range"
@@ -8,8 +10,12 @@
 # when sliced between multiplicities with sr[(:,1:1)], it returns another SectorUnitRange
 # TBD impose some compatibility constraints between range and quantum_dimension?
 
-const SectorUnitRange{T} = CartesianProductUnitRange{<:AbstractSector}
-const SectorOneTo{T,Sector,Range} = SectorUnitRange{T,Sector,Base.OneTo{T}}
+const SectorUnitRange{T,Sector,Range} = CartesianProductUnitRange{
+  T,Sector,MultRange,Range
+} where {Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
+const SectorOneTo{T,Sector,Range} = CartesianProductUnitRange{
+  T,Sector,MultRange,Base.OneTo{T}
+} where {Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
 
 # ====================================  Constructors  ======================================
 
@@ -81,6 +87,7 @@ end
 # generic
 
 # =============================  GradedUnitRanges interface  ===============================
+to_gradedrange(sr::SectorUnitRange) = mortar_axis([sr])
 
 sectors(sr::SectorUnitRange) = [sector(sr)]
 

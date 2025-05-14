@@ -5,10 +5,10 @@ include("symmetry_style.jl")
 
 include("KroneckerProducts/KroneckerProducts.jl")
 
+include("abstractsector.jl")
 include("sectorunitrange.jl")
 include("gradedunitrange.jl")
 
-include("abstractsector.jl")
 include("sector_definitions/fib.jl")
 include("sector_definitions/ising.jl")
 include("sector_definitions/o2.jl")

@@ -96,6 +96,8 @@ end
 # =============================  GradedUnitRanges interface  ===============================
 dual(g::GradedUnitRange) = GradedUnitRange(dual.(eachblockaxis(g)), ungrade(g))
 
+to_gradedrange(g::AbstractGradedUnitRange) = g
+
 isdual(g::AbstractGradedUnitRange) = isdual(first(eachblockaxis(g)))  # crash for empty. Should not be an issue.
 
 function sectors(g::AbstractGradedUnitRange)
