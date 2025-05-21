@@ -13,10 +13,10 @@ using GradedArrays.KroneckerProducts:
 
 const SectorUnitRange{T,Sector,Range} = CartesianProductUnitRange{
   T,Sector,MultRange,Range
-} where {T,Sector<:AbstractSector,MultRange<:AbstractUnitRange{T},Range}
+} where {T,Sector<:Flux,MultRange<:AbstractUnitRange{T},Range}
 const SectorOneTo{T,Sector,Range} = CartesianProductUnitRange{
   T,Sector,MultRange,Base.OneTo{T}
-} where {T,Sector<:AbstractSector,MultRange<:AbstractUnitRange{T}}
+} where {T,Sector<:Flux,MultRange<:AbstractUnitRange{T}}
 
 # ====================================  Constructors  ======================================
 

@@ -28,10 +28,10 @@ GradedArrays.arguments(km::KroneckerMatrix) = (km.a, km.b)
 function Base.axes(km::KroneckerMatrix)
   return (
     cartesianproductunitrange(
-      cartesianproduct(first.(axes.(arguments(km)))...), 1:size(km, 1), false
+      cartesianproduct(first.(axes.(arguments(km)))...), 1:size(km, 1)
     ),
     cartesianproductunitrange(
-      cartesianproduct(last.(axes.(arguments(km)))...), 1:size(km, 2), false
+      cartesianproduct(last.(axes.(arguments(km)))...), 1:size(km, 2)
     ),
   )
 end
@@ -62,4 +62,11 @@ end
 
 for f in [:-, :adjoint, :copy, :transpose]
   @eval Base.$f(km::KroneckerMatrix) = kroneckermatrix($f.(arguments(km))...)
+end
+
+function Base.getindex(::KroneckerMatrix, ::Integer)
+  throw(MethodError(getindex, "Not implemented"))
+end
+function Base.getindex(::KroneckerMatrix, ::Integer, ::Integer)
+  throw(MethodError(getindex, "Not implemented"))
 end
