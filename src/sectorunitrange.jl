@@ -11,33 +11,34 @@ using GradedArrays.KroneckerProducts:
 # when sliced between multiplicities with sr[(:,1:1)], it returns another SectorUnitRange
 # TBD impose some compatibility constraints between range and quantum_dimension?
 
-const SectorUnitRange{T,Sector,Range} = CartesianProductUnitRange{
-  T,Sector,MultRange,Range
-} where {T,Sector<:Flux,MultRange<:AbstractUnitRange{T},Range}
-const SectorOneTo{T,Sector,Range} = CartesianProductUnitRange{
-  T,Sector,MultRange,Base.OneTo{T}
-} where {T,Sector<:Flux,MultRange<:AbstractUnitRange{T}}
+const SectorUnitRange{T,F,Range} = CartesianProductUnitRange{
+  T,F,MultRange,Range
+} where {T,F<:Flux,MultRange<:AbstractUnitRange{T},Range}
+const SectorOneTo{T,F,Range} = CartesianProductUnitRange{
+  T,F,MultRange,Base.OneTo{T}
+} where {T,F<:Flux,MultRange<:AbstractUnitRange{T}}
 
 # ====================================  Constructors  ======================================
 
-# sectorrange(SU2(1), 2:5)
-function sectorrange(s, r::AbstractUnitRange, b::Bool=false)
-  return cartesianproductunitrange(cartesianproduct(to_sector(s), r), r, b)
+# sectorrange(flux(SU2(1), false), 2:5)
+function sectorrange(f::Flux, r::AbstractUnitRange)
+  return cartesianproductunitrange(cartesianproduct(f, r), Base.oneto(length(f)))
 end
 
-# sectorrange(SU2(1), 1)
-function sectorrange(s, m::Integer, b::Bool=false)
-  return sectorrange(s, Base.oneto(m * length(s)), b)
+# sectorrange(flux(SU2(1), false), 1)
+function sectorrange(f::Flux, m::Integer)
+  return sectorrange(f, Base.oneto(m * length(f)))
 end
 
-# sectorrange(SU2(1) => 1)
-function sectorrange(p::Pair, b::Bool=false)
-  return sectorrange(first(p), last(p), b)
+# sectorrange(flux(SU2(1),false) => 1)
+function sectorrange(p::Pair)
+  return sectorrange(first(p), last(p))
 end
 
 # =====================================  Accessors  ========================================
 
-sector(sr::SectorUnitRange) = first(KroneckerProducts.arguments(cartesianproduct(sr)))
+flux(sr::SectorUnitRange) = first(KroneckerProducts.arguments(cartesianproduct(sr)))
+sector(sr::SectorUnitRange) = sector(flux(sr))
 ungrade(sr::SectorUnitRange) = last(KroneckerProducts.arguments(cartesianproduct(sr)))
 
 # ==================================  Base interface  ======================================

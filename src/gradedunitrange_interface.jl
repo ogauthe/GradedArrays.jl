@@ -14,6 +14,8 @@ isdual(::AbstractUnitRange) = false
 
 flip(a::AbstractUnitRange) = dual(map_sectors(dual, a))
 
+flip_dual(x) = isdual(x) ? flip(x) : x
+
 """
     dag(r::AbstractUnitRange)
 

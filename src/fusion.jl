@@ -2,8 +2,6 @@ using BlockArrays: Block, blocks
 using SplitApplyCombine: groupcount
 using TensorProducts: TensorProducts, ⊗, OneToOne, tensor_product
 
-flip_dual(r::AbstractUnitRange) = isdual(r) ? flip(r) : r
-
 # TensorProducts interface
 function TensorProducts.tensor_product(sr1::SectorUnitRange, sr2::SectorUnitRange)
   return tensor_product(combine_styles(SymmetryStyle(sr1), SymmetryStyle(sr2)), sr1, sr2)

@@ -5,14 +5,14 @@ using GradedArrays: GradedArrays, arguments, isdual
 struct CartesianProductUnitRange{T,A,B,Range} <: AbstractUnitRange{T}
   cp::CartesianProduct{A,B}
   full_range::Range
-  function CartesianProductUnitRange{T,A,B,Range}(cp, r, b) where {T,A,B,Range}
-    return new{T,A,B,Range}(cp, r, b)
+  function CartesianProductUnitRange{T,A,B,Range}(cp, r) where {T,A,B,Range}
+    return new{T,A,B,Range}(cp, r)
   end
 end
 
 # ====================================  Constructors  ======================================
 
-function CartesianProductUnitRange(cp, r, b)
+function CartesianProductUnitRange(cp, r)
   A, B = typeof.(arguments(cp))
   return CartesianProductUnitRange{eltype(r),A,B,typeof(r)}(cp, r)
 end

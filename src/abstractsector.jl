@@ -53,7 +53,8 @@ end
 
 function fusion_rule(::NotAbelianStyle, c1::C, c2::C) where {C<:AbstractSector}
   sector_degen_pairs = label_fusion_rule(C, sector_label(c1), sector_label(c2))
-  return gradedrange(sector_degen_pairs)
+  flux_degen_pairs = flux.(first.(sector_degen_pairs), false) .=> last.(sector_degen_pairs)
+  return gradedrange(flux_degen_pairs)
 end
 
 # abelian case: return Sector

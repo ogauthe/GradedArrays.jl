@@ -6,6 +6,7 @@ include("symmetry_style.jl")
 include("KroneckerProducts/KroneckerProducts.jl")
 
 include("abstractsector.jl")
+include("flux.jl")
 include("sectorunitrange.jl")
 include("gradedunitrange.jl")
 

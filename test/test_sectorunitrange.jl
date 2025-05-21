@@ -13,13 +13,16 @@ using BlockArrays:
   findblock
 using TestExtras: @constinferred
 
+using TensorProducts: ⊗
 using GradedArrays:
+  Flux,
   U1,
   SU,
   SectorOneTo,
   SectorUnitRange,
   dual,
   flip,
+  flux,
   isdual,
   quantum_dimension,
   sector,
@@ -30,6 +33,30 @@ using GradedArrays:
   sectors,
   space_isequal,
   ungrade
+
+@testset "Flux" begin
+  s = U1(1)
+  f = flux(s, false)
+  @test f isa Flux
+  @test !isdual(f)
+  @test sector(f) == s
+  @test f == f
+
+  fd = flux(s, true)
+  @test fd isa Flux
+  @test isdual(fd)
+  @test sector(fd) == s
+  @test fd == fd
+  @test fd != f
+  @test fd == dual(f)
+  @test dual(fd) == f
+
+  @test sector_type(f) === typeof(s)
+
+  @test f ⊗ f == flux(U1(2), false)
+  @test f ⊗ fd == flux(U1(0), false)
+  @test fd ⊗ fd == flux(U1(-2), false)
+end
 
 @testset "SectorUnitRange" begin
   sr = sectorrange(SU((1, 0)), 2)
