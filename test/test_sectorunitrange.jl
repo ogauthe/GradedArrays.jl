@@ -18,11 +18,13 @@ using GradedArrays:
   Flux,
   U1,
   SU,
+  SU2,
   SectorOneTo,
   SectorUnitRange,
   dual,
   flip,
   flux,
+  gradedrange,
   isdual,
   quantum_dimension,
   sector,
@@ -41,6 +43,8 @@ using GradedArrays:
   @test !isdual(f)
   @test sector(f) == s
   @test f == f
+  @test quantum_dimension(f) == 1
+  @test length(f) == 1
 
   fd = flux(s, true)
   @test fd isa Flux
@@ -50,12 +54,23 @@ using GradedArrays:
   @test fd != f
   @test fd == dual(f)
   @test dual(fd) == f
+  @test quantum_dimension(fd) == 1
+  @test length(fd) == 1
 
   @test sector_type(f) === typeof(s)
 
   @test f ⊗ f == flux(U1(2), false)
   @test f ⊗ fd == flux(U1(0), false)
   @test fd ⊗ fd == flux(U1(-2), false)
+
+  # non-abelian
+  f = flux(SU2(1//2), false)
+  fd = dual(f)
+  @test quantum_dimension(f) == 2
+  @test length(f) == 2
+
+  g = gradedrange([flux(SU2(0), false) => 1, flux(SU2(1), false) => 1])
+  @test space_isequal(f ⊗ f, g)
 end
 
 @testset "SectorUnitRange" begin
