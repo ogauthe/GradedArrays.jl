@@ -2,7 +2,19 @@ using BlockArrays: Block, blocks
 using SplitApplyCombine: groupcount
 using TensorProducts: TensorProducts, ⊗, OneToOne, tensor_product
 
-# TensorProducts interface
+function TensorProducts.tensor_product(f1::Flux, f2::Flux)
+  return tensor_product(combine_styles(SymmetryStyle(f1), SymmetryStyle(f2)), f1, f2)
+end
+
+function TensorProducts.tensor_product(::AbelianStyle, f1::Flux, f2::Flux)
+  s = sector(flip_dual(f1)) ⊗ sector(flip_dual(f2))
+  return flux(s, false)
+end
+
+function TensorProducts.tensor_product(::NotAbelianStyle, f1::Flux, f2::Flux)
+  return sector(flip_dual(f1)) ⊗ sector(flip_dual(f2))
+end
+
 function TensorProducts.tensor_product(sr1::SectorUnitRange, sr2::SectorUnitRange)
   return tensor_product(combine_styles(SymmetryStyle(sr1), SymmetryStyle(sr2)), sr1, sr2)
 end

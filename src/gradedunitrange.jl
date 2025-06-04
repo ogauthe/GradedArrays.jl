@@ -252,7 +252,7 @@ function BlockSparseArrays.blockedunitrange_getindices(
   a::AbstractGradedUnitRange, index::Block{1}
 )
   sr = eachblockaxis(a)[Int(index)]
-  return sectorrange(sector(sr), ungrade(a)[index], isdual(sr))
+  return sectorrange(flux(sr), ungrade(a)[index])
 end
 
 function BlockSparseArrays.blockedunitrange_getindices(

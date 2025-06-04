@@ -93,15 +93,15 @@ to_gradedrange(sr::SectorUnitRange) = mortar_axis([sr])
 sectors(sr::SectorUnitRange) = [sector(sr)]
 
 function dual(sr::SectorUnitRange)
-  return sectorrange(sector(sr), ungrade(sr), !isdual(sr))
+  return sectorrange(dual(flux(sr)), ungrade(sr))
 end
 
 function flip(sr::SectorUnitRange)
-  return sectorrange(dual(sector(sr)), ungrade(sr), !isdual(sr))
+  return sectorrange(flip(sector(sr)), ungrade(sr))
 end
 
 function map_sectors(f, sr::SectorUnitRange)
-  return sectorrange(f(sector(sr)), ungrade(sr), isdual(sr))
+  return sectorrange(flux(f(sector(sr)), isdual(sr)), ungrade(sr))
 end
 
 sector_type(::Type{<:SectorUnitRange{T,Sector}}) where {T,Sector} = Sector

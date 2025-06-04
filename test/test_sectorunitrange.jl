@@ -71,6 +71,7 @@ using GradedArrays:
 
   g = gradedrange([flux(SU2(0), false) => 1, flux(SU2(1), false) => 1])
   @test space_isequal(f ⊗ f, g)
+  @test space_isequal(f ⊗ fd, g)
 end
 
 @testset "SectorUnitRange" begin
