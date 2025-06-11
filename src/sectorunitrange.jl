@@ -20,26 +20,43 @@ const SectorOneTo{T,F,Range} = CartesianProductUnitRange{
 
 # ====================================  Constructors  ======================================
 
+function sectorrange(s::AbstractSector, r::Union{Integer,AbstractUnitRange}; isdual=false)
+  return sectorrange(Flux(s, isdual), r)
+end
+
 # sectorrange(flux(SU2(1), false), 2:5)
 function sectorrange(f::Flux, r::AbstractUnitRange)
-  return cartesianproductunitrange(cartesianproduct(f, r), Base.oneto(length(f)))
+  cp = cartesianproduct(f, r)
+  @show cp
+  @show length(cp)
+  return cartesianproductunitrange(cp, Base.oneto(length(cp)))
 end
+
+# TODO define straight cartesianproductunitrange(::CartesianProduct)
 
 # sectorrange(flux(SU2(1), false), 1)
 function sectorrange(f::Flux, m::Integer)
-  return sectorrange(f, Base.oneto(m * length(f)))
+  @show "HI"
+  return sectorrange(f, Base.oneto(m))
 end
 
 # sectorrange(flux(SU2(1),false) => 1)
-function sectorrange(p::Pair)
+function sectorrange(p::Pair{<:Flux})
   return sectorrange(first(p), last(p))
+end
+
+function sectorrange(p::Pair{<:AbstractSector}; isdual=false)
+  return sectorrange(first(p), last(p); isdual)
 end
 
 # =====================================  Accessors  ========================================
 
 flux(sr::SectorUnitRange) = first(KroneckerProducts.arguments(cartesianproduct(sr)))
 sector(sr::SectorUnitRange) = sector(flux(sr))
-ungrade(sr::SectorUnitRange) = last(KroneckerProducts.arguments(cartesianproduct(sr)))
+ungrade(sr::SectorUnitRange) = sr.full_range
+function multiplicity_range(sr::SectorUnitRange)
+  return last(KroneckerProducts.arguments(cartesianproduct(sr)))
+end
 
 # ==================================  Base interface  ======================================
 
@@ -62,7 +79,7 @@ function Base.getindex(sr::SectorUnitRange, ::NotAbelianStyle, r::AbstractUnitRa
   return ungrade(sr)[r]
 end
 function Base.getindex(sr::SectorUnitRange, ::AbelianStyle, r::AbstractUnitRange)
-  return sectorrange(sector(sr), ungrade(sr)[r], isdual(sr))
+  return sectorrange(sector(sr), ungrade(sr)[r]; isdual=isdual(sr))
 end
 
 # TODO replace (:,x) indexing with kronecker(:, x)
@@ -70,7 +87,7 @@ Base.getindex(sr::SectorUnitRange, t::Tuple{Colon,<:Integer}) = sr[(:, last(t):l
 function Base.getindex(sr::SectorUnitRange, t::Tuple{Colon,<:AbstractUnitRange})
   r = last(t)
   new_range = ((first(r) - 1) * length(sector(sr)) + 1):(last(r) * length(sector(sr)))
-  return sectorrange(sector(sr), ungrade(sr)[new_range], isdual(sr))
+  return sectorrange(sector(sr), ungrade(sr)[new_range]; isdual=isdual(sr))
 end
 
 function Base.show(io::IO, sr::SectorUnitRange)
@@ -93,19 +110,21 @@ to_gradedrange(sr::SectorUnitRange) = mortar_axis([sr])
 sectors(sr::SectorUnitRange) = [sector(sr)]
 
 function dual(sr::SectorUnitRange)
-  return sectorrange(dual(flux(sr)), ungrade(sr))
+  return sectorrange(dual(flux(sr)), multiplicity_range(sr))
 end
 
 function flip(sr::SectorUnitRange)
-  return sectorrange(flip(sector(sr)), ungrade(sr))
+  return sectorrange(flip(flux(sr)), multiplicity_range(sr))
 end
 
 function map_sectors(f, sr::SectorUnitRange)
-  return sectorrange(flux(f(sector(sr)), isdual(sr)), ungrade(sr))
+  return sectorrange(flux(f(sector(sr)), isdual(sr)), multiplicity_range(sr))
 end
 
-sector_type(::Type{<:SectorUnitRange{T,Sector}}) where {T,Sector} = Sector
+sector_type(::Type{<:SectorUnitRange{T,Flux}}) where {T,Flux} = sector_type(Flux)
 
 # TBD error for non-integer?
-sector_multiplicity(sr::SectorUnitRange) = length(sr) ÷ length(sector(sr))
+sector_multiplicity(sr::SectorUnitRange) = length(multiplicity_range(sr))
 sector_multiplicities(sr::SectorUnitRange) = [sector_multiplicity(sr)]  # TBD remove?
+
+isdual(sr::SectorUnitRange) = isdual(flux(sr))

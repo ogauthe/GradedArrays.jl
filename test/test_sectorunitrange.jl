@@ -63,19 +63,21 @@ using GradedArrays:
   @test f ⊗ fd == flux(U1(0), false)
   @test fd ⊗ fd == flux(U1(-2), false)
 
+  # call Flux instead flux
+
   # non-abelian
   f = flux(SU2(1//2), false)
   fd = dual(f)
   @test quantum_dimension(f) == 2
   @test length(f) == 2
 
-  g = gradedrange([flux(SU2(0), false) => 1, flux(SU2(1), false) => 1])
+  g = gradedrange([SU2(0) => 1, SU2(1) => 1])
   @test space_isequal(f ⊗ f, g)
   @test space_isequal(f ⊗ fd, g)
 end
 
 @testset "SectorUnitRange" begin
-  sr = sectorrange(SU((1, 0)), 2)
+  sr = sectorrange(flux(SU((1, 0)), false), 2)
   @test sr isa SectorUnitRange
   @test sr isa SectorOneTo
 
@@ -107,21 +109,21 @@ end
   @test sr == sr
   @test space_isequal(sr, sr)
 
-  sr = sectorrange(SU((1, 0)) => 2)
+  sr = sectorrange(Flux(SU((1, 0)), false) => 2)  #TODO default
   @test sr isa SectorUnitRange
   @test sector(sr) == SU((1, 0))
   @test ungrade(sr) isa Base.OneTo
   @test ungrade(sr) == 1:6
   @test !isdual(sr)
 
-  sr = sectorrange(SU((1, 0)) => 2, true)
+  sr = sectorrange(SU((1, 0)) => 2; isdual=true)
   @test sr isa SectorUnitRange
   @test sector(sr) == SU((1, 0))
   @test ungrade(sr) isa Base.OneTo
   @test ungrade(sr) == 1:6
   @test isdual(sr)
 
-  sr = sectorrange(SU((1, 0)), 4:10, true)
+  sr = sectorrange(SU((1, 0)), 4:10; isdual=true)  # use 3 values as input
   @test sr isa SectorUnitRange
   @test sector(sr) == SU((1, 0))
   @test ungrade(sr) isa UnitRange
@@ -131,8 +133,8 @@ end
   sr = sectorrange(SU((1, 0)), 2)
   @test !space_isequal(sr, sectorrange(SU((1, 1)), 2))
   @test !space_isequal(sr, sectorrange(SU((1, 0)), 2:7))
-  @test !space_isequal(sr, sectorrange(SU((1, 1)), 2, true))
-  @test !space_isequal(sr, sectorrange(SU((1, 0)), 2, true))
+  @test !space_isequal(sr, sectorrange(SU((1, 1)), 2; isdual=true))
+  @test !space_isequal(sr, sectorrange(SU((1, 0)), 2; isdual=true))
 
   sr2 = copy(sr)
   @test sr2 isa SectorUnitRange
@@ -162,12 +164,12 @@ end
 
   srd = dual(sr)
   @test sector(srd) == SU((1, 0))
-  @test space_isequal(srd, sectorrange(SU((1, 0)), 2, true))
+  @test space_isequal(srd, sectorrange(SU((1, 0)), 2; isdual=true))
   @test sectors(srd) == [SU((1, 0))]
 
   srf = flip(sr)
   @test sector(srf) == SU((1, 1))
-  @test space_isequal(srf, sectorrange(SU((1, 1)), 2, true))
+  @test space_isequal(srf, sectorrange(SU((1, 1)), 2; isdual=true))
 
   # getindex
   @test_throws BoundsError sr[0]
@@ -192,5 +194,5 @@ end
   srab = sectorrange(U1(1), 3)
   @test (@constinferred getindex(srab, 2:2)) isa SectorUnitRange
   @test space_isequal(srab[2:2], sectorrange(U1(1), 2:2))
-  @test space_isequal(dual(srab)[2:2], sectorrange(U1(1), 2:2, true))
+  @test space_isequal(dual(srab)[2:2], sectorrange(U1(1), 2:2; isdual=true))
 end

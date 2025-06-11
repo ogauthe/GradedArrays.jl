@@ -1,7 +1,7 @@
 
 # =====================================  Definition  =======================================
 
-struct Flux{S} <: AbstractSector
+struct Flux{S} #<: AbstractSector
   sector::S
   isdual::Bool
 end

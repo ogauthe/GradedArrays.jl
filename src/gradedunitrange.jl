@@ -79,6 +79,12 @@ function BlockSparseArrays.mortar_axis(gaxes::AbstractVector{<:GradedOneTo})
   return mortar_axis(mapreduce(eachblockaxis, vcat, gaxes))
 end
 
+function gradedrange(sectors_lengths::AbstractVector{<:Pair{<:Any,<:Integer}}; isdual=false)
+  sectors = first.(sectors_lengths)
+  lengths = last.(sectors_lengths)
+  return gradedrange(Flux.(sectors, isdual) .=> lengths)
+end
+
 function gradedrange(sectors_lengths::AbstractVector{<:Pair{<:Flux,<:Integer}})
   geachblockaxis = sectorrange.(sectors_lengths)
   return mortar_axis(geachblockaxis)
