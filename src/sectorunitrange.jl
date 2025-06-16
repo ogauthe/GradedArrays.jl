@@ -63,7 +63,7 @@ function Base.getindex(sr::SectorUnitRange, ::NotAbelianStyle, r::AbstractUnitRa
   return ungrade(sr)[r]
 end
 function Base.getindex(sr::SectorUnitRange, ::AbelianStyle, r::AbstractUnitRange)
-  return sectorrange(sector(sr), ungrade(sr)[r], isdual(sr))
+  return sectorrange(sector(sr), ungrade(sr)[ungrade(r)], isdual(sr))
 end
 
 # TODO replace (:,x) indexing with kronecker(:, x)
