@@ -4,8 +4,10 @@ using BlockArrays: blocks
 using BlockSparseArrays: BlockSparseArray, blockreshape
 using GradedArrays:
   AbstractGradedUnitRange,
+  AbstractSector,
   GradedArray,
   flip,
+  gradedrange,
   invblockperm,
   sectormergesortperm,
   sectorsortperm,
@@ -13,6 +15,7 @@ using GradedArrays:
   unmerged_tensor_product
 using TensorAlgebra:
   TensorAlgebra,
+  ⊗,
   AbstractBlockPermutation,
   BlockedTuple,
   FusionStyle,
@@ -23,8 +26,15 @@ struct SectorFusion <: FusionStyle end
 
 TensorAlgebra.FusionStyle(::Type{<:GradedArray}) = SectorFusion()
 
-# TBD consider heterogeneous sectors?
-TensorAlgebra.trivial_axis(t::Tuple{Vararg{AbstractGradedUnitRange}}) = trivial(first(t))
+function TensorAlgebra.trivial_axis(t::Tuple{Vararg{G}}) where {G<:AbstractGradedUnitRange}
+  return trivial(first(t))
+end
+# heterogeneous sectors
+TensorAlgebra.trivial_axis(t::Tuple{Vararg{AbstractGradedUnitRange}}) = ⊗(trivial.(t)...)
+# trivial_axis from sector_type
+function TensorAlgebra.trivial_axis(::Type{S}) where {S<:AbstractSector}
+  return gradedrange([trivial(S) => 1])
+end
 
 function matricize_axes(
   blocked_axes::BlockedTuple{2,<:Any,<:Tuple{Vararg{AbstractUnitRange}}}
