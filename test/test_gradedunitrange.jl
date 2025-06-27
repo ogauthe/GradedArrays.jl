@@ -21,7 +21,11 @@ using GradedArrays:
   SectorOneTo,
   SectorUnitRange,
   SU,
+  checkspaces,
+  checkspaces_dual,
   dual,
+  findfirstblock,
+  findfirstblock_sector,
   flip,
   gradedrange,
   isdual,
@@ -96,6 +100,8 @@ using Test: @test, @test_throws, @testset
     @test findblock(g, 2) == Block(1)
     @test findblock(g, 3) == Block(2)
     @test findblockindex(g, 3) == Block(2)[1]
+    @test findfirstblock_sector(g, "y") == Block(2)
+    @test isnothing(findfirstblock_sector(g, "a"))
 
     @test axes(Base.Slice(g)) isa Tuple{typeof(g)}
     @test AbstractUnitRange{Int}(g) == 1:7
@@ -205,8 +211,15 @@ using Test: @test, @test_throws, @testset
     @test space_isequal(only(axes(a)), gradedrange(["y" => 6, "x" => 2]; isdual=isdual(g)))
   end
 
+  @test checkspaces(Bool, (g1, g1d), (g1, g1d))
+
   @test space_isequal(g1d, dual(g1))
   @test space_isequal(dual(g1d), g1)
+  @test checkspaces((g1, g1d), (g1, g1d))
+  @test checkspaces_dual(Bool, (g1, g1d), (g1d, g1))
+  @test checkspaces_dual((g1, g1d), (g1d, g1))
+  @test_throws ArgumentError checkspaces((g1, g1), (g1, g1d))
+  @test_throws ArgumentError checkspaces_dual((g1, g1), (g1, g1d))
 
   for a in (
     combine_blockaxes(g1, b0),
@@ -274,6 +287,8 @@ end
   @test g[4] == 4
   @test g[Block(1)[1]] == 1
   @test g[Block(2)[1]] == 3
+  @test findfirstblock(g, SU((1, 0))) == Block(2)
+  @test isnothing(findfirstblock(g, SU((2, 0))))
 
   # Non-abelian slicing operations
   a = g[2:4]
