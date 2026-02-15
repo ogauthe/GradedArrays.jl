@@ -105,7 +105,8 @@ function TKS.Nsymbol(s1::SectorProduct, s2::SectorProduct, s3::SectorProduct)
 
     s1_can, s2_can, s3_can = arguments_canonicalize(s1, s2, s3)
     return prod(
-        splat(TKS.Nsymbol), zip(arguments(s1_can), arguments(s2_can), arguments(s3_can)); init = 1
+        splat(TKS.Nsymbol), zip(arguments(s1_can), arguments(s2_can), arguments(s3_can));
+        init = 1
     )
 end
 
@@ -211,13 +212,14 @@ function ×(sr1::SectorOneTo, sr2::SectorOneTo)
     return sectorrange(
         sector(sr1) × sector(sr2),
         sector_multiplicity(sr1) * sector_multiplicity(sr2),
-        isdual(sr1),
+        isdual(sr1)
     )
 end
 
 function ×(g1::GradedOneTo, g2::GradedOneTo)
     v = map(
-        splat(×), Iterators.flatten((Iterators.product(eachblockaxis(g1), eachblockaxis(g2)),))
+        splat(×),
+        Iterators.flatten((Iterators.product(eachblockaxis(g1), eachblockaxis(g2)),))
     )
     return mortar_axis(v)
 end
@@ -235,7 +237,7 @@ function arguments_canonicalize(s1::SectorProduct{<:Tuple}, s2::SectorProduct{<:
             throw(
             ArgumentError(
                 "Cannot canonicalize SectorProduct with different non-trivial arguments"
-            ),
+            )
         )
     end
     lmax = max(length(arguments(s1)), length(arguments(s2)))
@@ -246,7 +248,7 @@ function arguments_canonicalize(s1::SectorProduct{<:Tuple}, s2::SectorProduct{<:
                 si != TKS.Trivial() && return si
             end
             return one(arguments(s2)[i])
-        end,
+        end
     )
     s2′ = SectorProduct(
         ntuple(lmax) do i
@@ -255,7 +257,7 @@ function arguments_canonicalize(s1::SectorProduct{<:Tuple}, s2::SectorProduct{<:
                 si != TKS.Trivial() && return si
             end
             return one(arguments(s1)[i])
-        end,
+        end
     )
     return s1′, s2′
 end
@@ -277,7 +279,7 @@ function arguments_canonicalize(
             throw(
             ArgumentError(
                 "Cannot canonicalize SectorProduct with different non-trivial arguments"
-            ),
+            )
         )
     end
     s1′ = SectorProduct(
@@ -290,7 +292,7 @@ function arguments_canonicalize(
                 else
                     return si
                 end
-            end,
+            end
         )
     )
     s2′ = SectorProduct(
@@ -303,7 +305,7 @@ function arguments_canonicalize(
                 else
                     return si
                 end
-            end,
+            end
         )
     )
     return s1′, s2′

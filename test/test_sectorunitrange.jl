@@ -1,32 +1,8 @@
-using BlockArrays:
-    Block,
-    BlockBoundsError,
-    BlockRange,
-    blockaxes,
-    blocklasts,
-    blocklength,
-    blocklengths,
-    blockisequal,
-    blocks,
-    findblock
-using GradedArrays:
-    U1,
-    SU2,
-    SectorOneTo,
-    SectorUnitRange,
-    SectorVector,
-    dual,
-    flip,
-    isdual,
-    quantum_dimension,
-    sector,
-    sector_multiplicities,
-    sector_multiplicity,
-    sector_type,
-    sectorrange,
-    sectors,
-    space_isequal,
-    ungrade
+using BlockArrays: Block, BlockBoundsError, BlockRange, blockaxes, blockisequal, blocklasts,
+    blocklength, blocklengths, blocks, findblock
+using GradedArrays: SU2, SectorOneTo, SectorUnitRange, SectorVector, U1, dual, flip, isdual,
+    quantum_dimension, sector, sector_multiplicities, sector_multiplicity, sector_type,
+    sectorrange, sectors, space_isequal, ungrade
 using Test: @test, @test_throws, @testset
 using TestExtras: @constinferred
 

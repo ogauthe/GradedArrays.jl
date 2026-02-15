@@ -1,41 +1,10 @@
-using BlockArrays:
-    Block,
-    BlockSlice,
-    BlockedOneTo,
-    BlockVector,
-    BlockedUnitRange,
-    blockedrange,
-    blockfirsts,
-    blockisequal,
-    blocklasts,
-    blocklength,
-    blocklengths,
-    blocks,
-    combine_blockaxes,
-    findblock,
-    findblockindex,
-    mortar
-using GradedArrays:
-    GradedOneTo,
-    GradedUnitRange,
-    SectorOneTo,
-    SectorUnitRange,
-    SU2,
-    checkspaces,
-    checkspaces_dual,
-    dual,
-    findfirstblock,
-    findfirstblock_sector,
-    flip,
-    gradedrange,
-    isdual,
-    mortar_axis,
-    sector_multiplicities,
-    sector_type,
-    sectors,
-    sectorrange,
-    space_isequal,
-    to_gradedrange
+using BlockArrays: Block, BlockSlice, BlockVector, BlockedOneTo, BlockedUnitRange,
+    blockedrange, blockfirsts, blockisequal, blocklasts, blocklength, blocklengths, blocks,
+    combine_blockaxes, findblock, findblockindex, mortar
+using GradedArrays: GradedOneTo, GradedUnitRange, SU2, SectorOneTo, SectorUnitRange,
+    checkspaces, checkspaces_dual, dual, findfirstblock, findfirstblock_sector, flip,
+    gradedrange, isdual, mortar_axis, sector_multiplicities, sector_type, sectorrange,
+    sectors, space_isequal, to_gradedrange
 using Test: @test, @test_throws, @testset
 
 @testset "GradedUnitRanges basics" begin
@@ -212,13 +181,19 @@ using Test: @test, @test_throws, @testset
         @test blocklength(a) == 3
         ax = only(axes(a))
         @test ax isa GradedOneTo
-        @test space_isequal(ax, gradedrange(["x" => 1, "x" => 2, "y" => 2]; isdual = isdual(g)))
+        @test space_isequal(
+            ax,
+            gradedrange(["x" => 1, "x" => 2, "y" => 2]; isdual = isdual(g))
+        )
 
         v = mortar([[Block(2), Block(2)], [Block(1)]])
         a = g[v]
         @test a isa BlockVector
         @test only(axes(a)) isa GradedOneTo
-        @test space_isequal(only(axes(a)), gradedrange(["y" => 6, "x" => 2]; isdual = isdual(g)))
+        @test space_isequal(
+            only(axes(a)),
+            gradedrange(["y" => 6, "x" => 2]; isdual = isdual(g))
+        )
     end
 
     @test checkspaces(Bool, (g1, g1d), (g1, g1d))
@@ -361,10 +336,12 @@ end
         g3[(:, 1:4)], gradedrange([SU2(0) => 2, SU2(1 / 2) => 2]; isdual = true)
     )
     @test space_isequal(
-        g3[(:, 1:5)], gradedrange([SU2(0) => 2, SU2(1 / 2) => 2, SU2(1) => 1]; isdual = true)
+        g3[(:, 1:5)],
+        gradedrange([SU2(0) => 2, SU2(1 / 2) => 2, SU2(1) => 1]; isdual = true)
     )
     @test space_isequal(
-        g3[(:, 2:5)], gradedrange(2, [SU2(0) => 1, SU2(1 / 2) => 2, SU2(1) => 1]; isdual = true)
+        g3[(:, 2:5)],
+        gradedrange(2, [SU2(0) => 1, SU2(1 / 2) => 2, SU2(1) => 1]; isdual = true)
     )
     @test space_isequal(
         g3[(:, 3:5)], gradedrange(3, [SU2(1 / 2) => 2, SU2(1) => 1]; isdual = true)
