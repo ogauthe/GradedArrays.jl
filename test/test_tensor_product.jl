@@ -1,20 +1,8 @@
 using BlockArrays: blocklength, blocklengths
-using GradedArrays:
-    GradedArrays,
-    GradedOneTo,
-    NotAbelianStyle,
-    SectorUnitRange,
-    SU2,
-    U1,
-    dual,
-    gradedrange,
-    isdual,
-    sectormergesort,
-    sectorrange,
-    sectors,
-    space_isequal,
+using GradedArrays: GradedArrays, GradedOneTo, NotAbelianStyle, SU2, SectorUnitRange, U1,
+    dual, gradedrange, isdual, sectormergesort, sectorrange, sectors, space_isequal,
     unmerged_tensor_product
-using TensorProducts: ⊗, OneToOne, tensor_product
+using TensorProducts: OneToOne, tensor_product, ⊗
 using Test: @test, @testset
 using TestExtras: @constinferred
 
@@ -51,7 +39,7 @@ Base.length(s::NotAbelianString) = length(s.str)
                 NotAbelianString("xy") => 6,
                 NotAbelianString("yy") => 9,
             ]
-        ),
+        )
     )
 
     c = unmerged_tensor_product(a, a, a)
@@ -76,7 +64,7 @@ Base.length(s::NotAbelianString) = length(s.str)
                 U1(3) => 3,
                 U1(2) => 1,
             ]
-        ),
+        )
     )
     @test space_isequal(unmerged_tensor_product(a), a)
     @test space_isequal(unmerged_tensor_product(a, OneToOne()), a)

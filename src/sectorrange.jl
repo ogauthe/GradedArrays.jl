@@ -1,7 +1,7 @@
 # This file defines the interface for type Sector
 # all fusion categories (Z{2}, SU2, Ising...) are subtypes of Sector
-using TensorProducts: TensorProducts, ⊗
 import TensorKitSectors as TKS
+using TensorProducts: TensorProducts, ⊗
 
 """
     SectorRange(sector::TKS.Sector)

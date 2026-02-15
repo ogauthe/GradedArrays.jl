@@ -1,9 +1,8 @@
 using BlockArrays: BlockedOneTo, blockedrange, blockisequal
-
 using GradedArrays:
     NoSector, dag, dual, flip, isdual, map_sectors, sectors, space_isequal, ungrade
-using Test: @test, @testset
 using TensorProducts: OneToOne
+using Test: @test, @testset
 
 @testset "GradedUnitRange interface for AbstractUnitRange" begin
     a0 = OneToOne()

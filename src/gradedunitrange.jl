@@ -1,23 +1,7 @@
-using BlockArrays:
-    BlockArrays,
-    AbstractBlockVector,
-    AbstractBlockedUnitRange,
-    Block,
-    BlockIndex,
-    BlockIndexRange,
-    BlockRange,
-    BlockSlice,
-    BlockVector,
-    BlockedOneTo,
-    block,
-    blockfirsts,
-    blockedrange,
-    blocklasts,
-    blocklengths,
-    blocks,
-    combine_blockaxes,
-    findblock,
-    mortar
+using BlockArrays: BlockArrays, AbstractBlockVector, AbstractBlockedUnitRange, Block,
+    BlockIndex, BlockIndexRange, BlockRange, BlockSlice, BlockVector, BlockedOneTo, block,
+    blockedrange, blockfirsts, blocklasts, blocklengths, blocks, combine_blockaxes,
+    findblock, mortar
 using BlockSparseArrays:
     BlockSparseArrays, blockedunitrange_getindices, eachblockaxis, mortar_axis
 using Compat: allequal
@@ -93,7 +77,8 @@ function gradedrange(
 end
 
 function gradedrange(
-        f::Integer, sectors_lengths::AbstractVector{<:Pair{<:Any, <:Integer}}; isdual::Bool = false
+        f::Integer, sectors_lengths::AbstractVector{<:Pair{<:Any, <:Integer}};
+        isdual::Bool = false
     )
     geachblockaxis = sectorrange.(sectors_lengths, isdual)
     brange = blockedrange(f, length.(geachblockaxis))
@@ -207,7 +192,8 @@ for T in [
         :(BlockSlice),
         :(Tuple{Colon, <:Any}),  # TODO replace with Kronecker range
     ]
-    @eval Base.getindex(g::AbstractGradedUnitRange, indices::$T) = blockedunitrange_getindices(
+    @eval Base.getindex(g::AbstractGradedUnitRange, indices::$T) =
+        blockedunitrange_getindices(
         g, indices
     )
 end
@@ -257,7 +243,10 @@ for T in [
         :(AbstractVector{<:BlockIndexRange{1}}),
         :(BlockVector{<:BlockIndex{1}, <:Vector{<:BlockIndexRange{1}}}),
     ]
-    @eval BlockSparseArrays.blockedunitrange_getindices(g::AbstractGradedUnitRange, indices::$T) = gradedunitrange_getindices(
+    @eval BlockSparseArrays.blockedunitrange_getindices(
+        g::AbstractGradedUnitRange,
+        indices::$T
+    ) = gradedunitrange_getindices(
         SymmetryStyle(g), g, indices
     )
 end
@@ -287,7 +276,8 @@ function BlockSparseArrays.blockedunitrange_getindices(
     # pass block labels to the axes of the output,
     # such that `only(axes(a[indices])) isa `GradedUnitRange`
     # if `a isa `GradedUnitRange`
-    new_sectoraxes = sectorrange.(sector.(gblocks), Base.oneto.(length.(gblocks)), isdual(g))
+    new_sectoraxes =
+        sectorrange.(sector.(gblocks), Base.oneto.(length.(gblocks)), isdual(g))
     newg = mortar_axis(new_sectoraxes)
     return mortar(gblocks, (newg,))
 end
@@ -301,7 +291,8 @@ function BlockSparseArrays.blockedunitrange_getindices(
     new_sectors = map(b -> sectors(g)[Int.(b)], blocks(indices))
     @assert all(allequal.(new_sectors))
     new_lengths = length.(blks)
-    new_eachblockaxis = sectorrange.(first.(new_sectors), Base.oneto.(new_lengths), isdual(g))
+    new_eachblockaxis =
+        sectorrange.(first.(new_sectors), Base.oneto.(new_lengths), isdual(g))
     newg = mortar_axis(new_eachblockaxis)
     return mortar(blks, (newg,))
 end
@@ -326,10 +317,11 @@ function BlockSparseArrays.blockedunitrange_getindices(
     mult_range = blockedrange(sector_multiplicities(g))
     bf, bl = map(i -> Int(findblock(mult_range, i)), (first(r), last(r)))
     new_first =
-        blockfirsts(g)[bf] + (first(r) - first(mult_range[Block(bf)])) * length(sectors(g)[bf])
+        blockfirsts(g)[bf] +
+        (first(r) - first(mult_range[Block(bf)])) * length(sectors(g)[bf])
     new_axes = sectorrange.(
         sectors(g)[bf:bl] .=> blocklengths(blockedunitrange_getindices(mult_range, r)),
-        isdual(g),
+        isdual(g)
     )
     new_range = blockedrange(new_first, length.(new_axes))
     return GradedUnitRange(new_axes, new_range)

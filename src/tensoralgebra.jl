@@ -1,30 +1,17 @@
 using BlockArrays: blocks
 using BlockSparseArrays: BlockSparseArray, blockreshape
-using GradedArrays:
-    AbstractGradedUnitRange,
-    SectorRange,
-    GradedArray,
-    flip,
-    gradedrange,
-    invblockperm,
-    sectormergesortperm,
-    sectorsortperm,
-    trivial,
-    unmerged_tensor_product
-using TensorAlgebra:
-    TensorAlgebra,
-    ⊗,
-    AbstractBlockPermutation,
-    BlockedTuple,
-    FusionStyle,
-    trivial_axis,
-    unmatricize
+using GradedArrays: AbstractGradedUnitRange, GradedArray, SectorRange, flip, gradedrange,
+    invblockperm, sectormergesortperm, sectorsortperm, trivial, unmerged_tensor_product
+using TensorAlgebra: TensorAlgebra, AbstractBlockPermutation, BlockedTuple, FusionStyle,
+    trivial_axis, unmatricize, ⊗
 
 struct SectorFusion <: FusionStyle end
 
 TensorAlgebra.FusionStyle(::Type{<:GradedArray}) = SectorFusion()
 
-function TensorAlgebra.trivial_axis(t::Tuple{Vararg{G}}) where {G <: AbstractGradedUnitRange}
+function TensorAlgebra.trivial_axis(
+        t::Tuple{Vararg{G}}
+    ) where {G <: AbstractGradedUnitRange}
     return trivial(first(t))
 end
 # heterogeneous sectors
@@ -58,7 +45,7 @@ end
 function TensorAlgebra.unmatricize(
         ::SectorFusion,
         m::AbstractMatrix,
-        blocked_axes::BlockedTuple{2, <:Any, <:Tuple{Vararg{AbstractUnitRange}}},
+        blocked_axes::BlockedTuple{2, <:Any, <:Tuple{Vararg{AbstractUnitRange}}}
     )
     if isempty(blocked_axes)
         # Handle edge case of empty blocked_axes, which can occur

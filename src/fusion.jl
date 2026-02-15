@@ -1,6 +1,6 @@
 using BlockArrays: Block, blocks
 using SplitApplyCombine: groupcount
-using TensorProducts: TensorProducts, ⊗, OneToOne, tensor_product
+using TensorProducts: TensorProducts, OneToOne, tensor_product, ⊗
 
 flip_dual(r::AbstractUnitRange) = isdual(r) ? flip(r) : r
 
@@ -22,7 +22,8 @@ function TensorProducts.tensor_product(
     g0 = sector(flip_dual(sr1)) ⊗ sector(flip_dual(sr2))
     return gradedrange(
         sectors(g0) .=>
-            sector_multiplicity(sr1) * sector_multiplicity(sr2) .* sector_multiplicities(g0),
+            sector_multiplicity(sr1) * sector_multiplicity(sr2) .*
+            sector_multiplicities(g0)
     )
 end
 
@@ -63,7 +64,8 @@ end
 unmerged_tensor_product(a1, a2) = a1 ⊗ a2
 
 function unmerged_tensor_product(a1::AbstractGradedUnitRange, a2::AbstractGradedUnitRange)
-    new_axes = map(splat(⊗), Iterators.flatten((Iterators.product(blocks(a1), blocks(a2)),)))
+    new_axes =
+        map(splat(⊗), Iterators.flatten((Iterators.product(blocks(a1), blocks(a2)),)))
     return mortar_axis(new_axes)
 end
 

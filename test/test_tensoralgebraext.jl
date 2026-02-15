@@ -58,7 +58,10 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
         d = gradedrange([U1(0) => 2, U1(1) => 1])
         b = randn_blockdiagonal(elt, (d, d, dual(d), dual(d)))
         @test unmatricize(
-            matricize(b, (1, 2), (3, 4)), (axes(b, 1), axes(b, 2)), (axes(b, 3), axes(b, 4))
+            matricize(b, (1, 2), (3, 4)), (axes(b, 1), axes(b, 2)), (
+                axes(b, 3),
+                axes(b, 4),
+            )
         ) == b
 
         d1234 = gradedrange([U1(-2) => 1, U1(-1) => 4, U1(0) => 6, U1(1) => 4, U1(2) => 1])
@@ -96,7 +99,8 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
 
         # matrix vector
         a_dest, dimnames_dest = contract(a1, (2, -1, -2, 1), a3, (1, 2))
-        a_dest_dense, dimnames_dest_dense = contract(a1_dense, (2, -1, -2, 1), a3_dense, (1, 2))
+        a_dest_dense, dimnames_dest_dense =
+            contract(a1_dense, (2, -1, -2, 1), a3_dense, (1, 2))
         @test dimnames_dest == dimnames_dest_dense
         @test size(a_dest) == size(a_dest_dense)
         @test a_dest isa GradedArray
@@ -104,7 +108,8 @@ const elts = (Float32, Float64, Complex{Float32}, Complex{Float64})
 
         # vector matrix
         a_dest, dimnames_dest = contract(a3, (1, 2), a1, (2, -1, -2, 1))
-        a_dest_dense, dimnames_dest_dense = contract(a3_dense, (1, 2), a1_dense, (2, -1, -2, 1))
+        a_dest_dense, dimnames_dest_dense =
+            contract(a3_dense, (1, 2), a1_dense, (2, -1, -2, 1))
         @test dimnames_dest == dimnames_dest_dense
         @test size(a_dest) == size(a_dest_dense)
         @test a_dest isa GradedArray

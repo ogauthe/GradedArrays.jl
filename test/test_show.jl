@@ -2,9 +2,9 @@
 # sometimes displays GradedArrays.GradedUnitRange and sometimes GradedUnitRange depending
 # on exact setup
 
-using Test: @test, @testset
 using GradedArrays:
-    GradedArrays, ×, Fib, Ising, O2, SU2, TrivialSector, U1, gradedrange, sectorrange
+    GradedArrays, Fib, Ising, O2, SU2, TrivialSector, U1, gradedrange, sectorrange, ×
+using Test: @test, @testset
 
 show_namespaced(x) = sprint(show, x; context = (:module => GradedArrays))
 show_non_namespaced(x) = sprint(show, x)

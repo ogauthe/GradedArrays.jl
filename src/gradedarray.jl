@@ -1,17 +1,19 @@
+using ArrayLayouts: ArrayLayouts
 using BlockArrays: AbstractBlockedUnitRange
-using BlockSparseArrays:
-    BlockSparseArrays,
-    AbstractBlockSparseMatrix,
-    AnyAbstractBlockSparseArray,
-    BlockSparseArray,
-    blocktype,
-    eachblockstoredindex,
+using BlockSparseArrays: BlockSparseArrays, AbstractBlockSparseMatrix,
+    AnyAbstractBlockSparseArray, BlockSparseArray, blocktype, eachblockstoredindex,
     sparsemortar
 using LinearAlgebra: Adjoint
 using TypeParameterAccessors: similartype, unwrap_array_type
-using ArrayLayouts: ArrayLayouts
 
-const GradedArray{T, N, A <: AbstractArray{T, N}, Blocks <: AbstractArray{A, N}, Axes <: Tuple{AbstractGradedUnitRange{<:Integer}, Vararg{AbstractGradedUnitRange{<:Integer}}}} = BlockSparseArray{
+const GradedArray{
+    T,
+    N,
+    A <: AbstractArray{T, N},
+    Blocks <: AbstractArray{A, N},
+    Axes <:
+    Tuple{AbstractGradedUnitRange{<:Integer}, Vararg{AbstractGradedUnitRange{<:Integer}}},
+} = BlockSparseArray{
     T, N, A, Blocks, Axes,
 }
 const GradedMatrix{T, A, Blocks, Axes} = GradedArray{
@@ -41,7 +43,7 @@ end
 function similar_blocksparse(
         a::AbstractArray,
         elt::Type,
-        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}},
+        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}}
     )
     blockaxistypes = map(axes) do axis
         return eltype(Base.promote_op(eachblockaxis, typeof(axis)))
@@ -66,7 +68,7 @@ end
 function Base.similar(
         a::AbstractArray,
         elt::Type,
-        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}},
+        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}}
     )
     return similar_blocksparse(a, elt, axes)
 end
@@ -75,7 +77,7 @@ end
 function Base.similar(
         a::StridedArray,
         elt::Type,
-        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}},
+        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}}
     )
     return similar_blocksparse(a, elt, axes)
 end
@@ -85,7 +87,7 @@ end
 function Base.similar(
         a::AnyAbstractBlockSparseArray,
         elt::Type,
-        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}},
+        axes::Tuple{AbstractGradedUnitRange, Vararg{AbstractGradedUnitRange}}
     )
     return similar_blocksparse(a, elt, axes)
 end
@@ -117,7 +119,7 @@ end
 function Base.getindex(
         a::AnyAbstractBlockSparseArray,
         I1::AbstractGradedUnitRange,
-        I_rest::AbstractGradedUnitRange...,
+        I_rest::AbstractGradedUnitRange...
     )
     return getindex_blocksparse(a, I1, I_rest...)
 end
@@ -126,7 +128,7 @@ end
 function Base.getindex(
         a::AnyAbstractBlockSparseArray{<:Any, 2},
         I1::AbstractGradedUnitRange,
-        I2::AbstractGradedUnitRange,
+        I2::AbstractGradedUnitRange
     )
     return getindex_blocksparse(a, I1, I2)
 end
@@ -204,7 +206,10 @@ end
 # This accounts for the fact that the GradedArray alias is not defined in
 # BlockSparseArrays so for the sake of printing, Julia doesn't show it as
 # an alias: https://github.com/JuliaLang/julia/issues/40448
-function concretetype_to_string_truncated(type::Type; param_truncation_length = typemax(Int))
+function concretetype_to_string_truncated(
+        type::Type;
+        param_truncation_length = typemax(Int)
+    )
     isconcretetype(type) || throw(ArgumentError("Type must be concrete."))
     base_type, params = base_type_and_params(type)
     str = string(base_type)

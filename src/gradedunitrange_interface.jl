@@ -60,7 +60,8 @@ function checkspaces(::Type{Bool}, axes1, axes2)
 end
 
 function checkspaces(ax1, ax2)
-    return checkspaces(Bool, ax1, ax2) || throw(ArgumentError(lazy"$ax1 does not match $ax2"))
+    return checkspaces(Bool, ax1, ax2) ||
+        throw(ArgumentError(lazy"$ax1 does not match $ax2"))
 end
 
 checkspaces_dual(::Type{Bool}, axes1, axes2) = checkspaces(Bool, axes1, dual.(axes2))
